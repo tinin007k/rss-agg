@@ -58,6 +58,8 @@ func main() {
 
 	v1router.Post("/users", apiCfg.handlerUsersCreate) //new user creation endpoint
 	v1router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerUsersGet))
+	v1router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerFeedsCreate))
+	v1router.Get("/feeds", apiCfg.handlerFeedsGet)
 	v1router.Get("/healthz", handlerReadiness)
 	v1router.Get("/err", handlerErr)
 

@@ -6,13 +6,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tintin007k/rss-agg/internal/auth"
 	"github.com/tintin007k/rss-agg/internal/database"
 )
 
-func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerFeedsCreate(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+) {
 	type parameters struct {
 		Name string
+		Url  string
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -22,30 +26,27 @@ func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	dbFeed, err := cfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't create user")
+		respondWithError(w, http.StatusInternalServerError, "Couldn't create feed")
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+	respondWithJSON(w, http.StatusOK, databaseFeedToFeed(dbFeed))
 }
 
 func (cfg *apiConfig) handlerFeedsGet(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := auth.GetAPIKey(r.Header)
+	feeds, err := cfg.DB.GetFeed(r.Context())
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "authorizatoin is unsuccessful")
+		respondWithError(w, http.StatusInternalServerError, "error in fetching feeds")
 		return
 	}
-	user, err := cfg.DB.GetUser(r.Context(), apiKey)
-	if err != nil {
-		respondWithError(w, http.StatusNotFound, "user does not exist")
-		return
-	}
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+	respondWithJSON(w, http.StatusOK, databaseFeedsToFeed(feeds))
 }
