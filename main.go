@@ -20,6 +20,7 @@ type apiConfig struct {
 }
 
 func main() {
+
 	godotenv.Load(".env")
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -56,7 +57,7 @@ func main() {
 	v1router := chi.NewRouter()
 
 	v1router.Post("/users", apiCfg.handlerUsersCreate) //new user creation endpoint
-
+	v1router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerUsersGet))
 	v1router.Get("/healthz", handlerReadiness)
 	v1router.Get("/err", handlerErr)
 
