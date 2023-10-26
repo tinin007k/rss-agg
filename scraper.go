@@ -98,3 +98,22 @@ func fetchFeed(feedURL string) (*RSSFeed, error) {
 
 	return &rssFeed, nil
 }
+
+func getApiData(url string) ([]byte, error) {
+	http := http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	res, err := http.Get(url)
+	if err != nil {
+		log.Printf("error invoking the url: %s %v", url, err)
+		return nil, err
+	}
+	str, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("error reading the response body: %v", err)
+		return nil, err
+	}
+	log.Printf(string(str))
+	return str, nil
+}
