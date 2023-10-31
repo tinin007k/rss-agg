@@ -68,6 +68,7 @@ func main() {
 		"/feedfollows/{feedFollowID}",
 		apiCfg.middlewareAuth(apiCfg.handlerFeedFollowsDelete),
 	)
+	v1router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerPostsGet))
 
 	v1router.Get("/healthz", handlerReadiness)
 	v1router.Get("/err", handlerErr)
@@ -79,7 +80,7 @@ func main() {
 		Addr:    ":" + port,
 	}
 
-	go startScraping(dbQueries, 2, 2*time.Second)
+	go startScraping(dbQueries, 2, 10*time.Second)
 
 	log.Printf("server starting on port 8000")
 

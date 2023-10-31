@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,6 +43,17 @@ type FeedFollows struct {
 	FeedID    uuid.UUID `json:"feed_id"`
 }
 
+type Post struct {
+	ID          uuid.UUID  `json:"id"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	Url         string     `json:"url"`
+	Description *string    `json:"description"`
+	Title       string     `json:"title"`
+	PublishedAt *time.Time `json:"published_at"`
+	FeedID      uuid.UUID  `json:"feed_id"`
+}
+
 func databaseFeedToFeed(feed database.Feed) Feed {
 	return Feed{
 		ID:        feed.ID,
@@ -77,4 +89,39 @@ func databaseFeedsFollowToFeedsFollow(feedFollows []database.FeedFollow) []FeedF
 		feedList[i] = databaseFeedFollowsToFeedFollows(feed)
 	}
 	return feedList
+}
+
+func databasePostToPost(post database.Post) Post {
+	return Post{
+		ID:          post.ID,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+		Description: stringSqlNultoString(post.Description),
+		PublishedAt: timeSqlNultoTime(post.PublishedAt),
+		Url:         post.Url,
+		FeedID:      post.FeedID,
+		Title:       post.Title,
+	}
+}
+
+func databasePostsToPosts(posts []database.Post) []Post {
+	postList := make([]Post, len(posts))
+	for i, post := range posts {
+		postList[i] = databasePostToPost(post)
+	}
+	return postList
+}
+
+func stringSqlNultoString(sqlString sql.NullString) *string {
+	if sqlString.Valid == true {
+		return &sqlString.String
+	}
+	return nil
+}
+
+func timeSqlNultoTime(sqlTime sql.NullTime) *time.Time {
+	if sqlTime.Valid == true {
+		return &sqlTime.Time
+	}
+	return nil
 }
